@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>トランプ「数字比べ」</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="text-align: center;">
+    <!-- ゲーム画面をHTMLで配置 --- (*1) -->
+    <h1>トランプ「数字比べ」</h1>
+    <div><canvas id="canvas" width="498" height="360"></canvas></div><br>
+    <div><button mpy-click="next_card">カードをめくる</button></div><br>
+    <div id="result"></div>
+    <img id="cards" src="./cards.png" style="display:none;">
+</body>
+<script type="module" src="https://pyscript.net/releases/2025.8.1/core.js"></script>
+<script type="mpy">
+import js
+import random
+
+# 定数の定義 --- (*2)
+CARD_IMAGE_URL = "./cards.png"
+CARD_W = 239
+CARD_H = 335
+# グローバル変数 --- (*3)
+game = {"count": 0, "you": 0, "com": 0}
+cards = []
+# 手軽にDOMを取得する関数qを定義 --- (*4)
+q = lambda q: js.document.querySelector(q)
+# Canvasのコンテキストを取得 --- (*5)
+canvas = q("#canvas")
+context = canvas.getContext("2d")
+# 画像の要素を取得
+cards_img = q("#cards")
+
+def next_card(event):
+    """カードをめくる処理"""  # --- (*6)
+    global cards, game
+    if len(cards) == 0:
+        # カードがなくなったら新しい山札を作成してシャッフル
+        cards = list(range(52))  # 4種×13枚＝52枚のカード
+        shuffle_list(cards)
+        game = {"count": 0, "you": 0, "com": 0}
+    # カードを1枚ずつ引く --- (*7)
+    user_card = cards.pop()
+    com_card = cards.pop()
+    game["count"] += 1
+    # カードの画像を表示 --- (*8)
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    show_card("YOU", user_card)
+    show_card("COM", com_card)
+    # 勝敗を判定して表示 --- (*9)
+    user_no = user_card % 13
+    com_no = com_card % 13
+    if user_no == com_no:
+        result_text = "引き分け！"
+    elif user_no > com_no:
+        result_text = "あなたの勝ち!!!"
+        game["you"] += 1
+    else:
+        result_text = "負け..."
+        game["com"] += 1
+    q("#result").innerHTML = f"""
+        <b>{result_text}</b><br><br>
+        YOU: {game['you']}勝 / COM: {game['com']}勝<br>
+        残りカード: {len(cards)}枚
+    """
+
+def show_card(who, card):
+    """カードの画像を表示する関数"""  # --- (*10)
+    pos_dict = {"YOU": 0, "COM": CARD_W + 20}
+    x = (card % 13) * CARD_W
+    y = card // 13 * CARD_H
+    context.drawImage(cards_img,
+        x, y, CARD_W, CARD_H+1, # 元画像の切り出し位置とサイズ
+        pos_dict[who], 0, CARD_W, CARD_H+1) # 描画位置とサイズ
+    context.fillText(who, pos_dict[who] + 110, CARD_H + 20)
+
+def shuffle_list(list):
+    """Fisher-Yatesでリストをシャッフルする関数"""  # --- (*11)
+    for i in range(len(list) - 1, 0, -1):
+        j = random.randint(0, i)
+        list[i], list[j] = list[j], list[i]
+
+</script>
+</html>
