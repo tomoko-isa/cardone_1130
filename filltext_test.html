@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<body><canvas id="canvas" width="400" height="400"></canvas></body>
+<script type="module" src="https://pyscript.net/releases/2025.8.1/core.js"></script>
+<script type="mpy">
+import js
+
+# 描画用キャンバスを取得 --- (*1)
+canvas = js.document.getElementById("canvas")
+context = canvas.getContext("2d")
+
+# 描画位置が分かるように罫線を引く --- (*2)
+context.strokeStyle = "#a0a0FF"
+for i in range(0, 401, 50):
+    context.moveTo(0, i)  # 水平線を描画
+    context.lineTo(400, i)
+    context.stroke()
+    context.moveTo(i, 0)  # 垂直線を描画
+    context.lineTo(i, 400)
+    context.stroke()
+
+# 文字を描画 --- (*3)  
+context.fillStyle = "black"
+context.font = "50px serif"
+context.fillText("Hello, World!", 50, 50)
+context.fillText("This is a pen.", 50, 150)
+context.fillText("猫に小判", 50, 250)
+context.fillText("犬も歩けば…", 50, 350)
+</script>
